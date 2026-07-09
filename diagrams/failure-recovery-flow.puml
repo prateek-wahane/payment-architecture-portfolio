@@ -1,0 +1,16 @@
+@startuml
+start
+:Payment succeeds at PSP;
+:Webhook received by Payment Service;
+if (Order Service available?) then (yes)
+  :Publish PaymentSucceeded;
+  :Order marked PAID;
+else (no)
+  :Write event to outbox;
+  :Retry publishing;
+  :Order remains PAYMENT_CONFIRMATION_PENDING;
+  :Repair job checks mismatch;
+endif
+:Reconcile ledger, PSP report, bank statement;
+stop
+@enduml
