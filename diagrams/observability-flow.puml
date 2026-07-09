@@ -1,0 +1,22 @@
+@startuml
+actor Support
+component "Customer Complaint" as Complaint
+component "Log Search" as Logs
+component "Trace Search" as Traces
+database "Payment DB" as Payment
+database "Webhook DB" as Webhook
+database "Ledger DB" as Ledger
+queue "Broker / DLQ" as Broker
+component "Order Service" as Order
+component "Reconciliation" as Recon
+
+Support --> Complaint
+Complaint --> Logs : order_id/correlation_id
+Logs --> Traces
+Traces --> Payment
+Payment --> Webhook
+Payment --> Ledger
+Ledger --> Broker
+Broker --> Order
+Payment --> Recon
+@enduml
