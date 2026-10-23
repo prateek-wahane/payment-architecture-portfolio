@@ -57,10 +57,10 @@ class Corpus:
         return sorted(results, key=lambda c: (-c["score"], c["path"], c["line"]))[:5]
 
 
-def request_json(url, payload, token, timeout=3):
+def request_json(url, payload, token, timeout=3, headers=None):
     data = json.dumps(payload).encode()
     request = urllib.request.Request(url, data=data, headers={
-        "Content-Type": "application/json", "Authorization": "Bearer " + token})
+        "Content-Type": "application/json", "Authorization": "Bearer " + token, **(headers or {})})
     with urllib.request.urlopen(request, timeout=timeout) as response:
         raw = response.read(256_001)
         if len(raw) > 256_000:
@@ -106,26 +106,6 @@ def investigate(question, workers, token):
             "evidence_bytes": len(json.dumps(evidence).encode())}
 
 
-PAGE = '''<!doctype html><html lang="en"><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Payment Architecture Research</title>
-<style>body{font:17px system-ui;max-width:850px;margin:30px auto;padding:16px;background:#f4f6fa;color:#15233c}input,textarea,button{box-sizing:border-box;width:100%;padding:12px;margin:8px 0;font:inherit}article{background:white;padding:18px;margin:16px 0;border-radius:10px}pre{white-space:pre-wrap;overflow-wrap:anywhere}small{color:#52617b}</style>
-<h1>Payment Architecture Research</h1><p>Search evidence across your document devices.</p>
-<form id="form"><label>Access token<input id="token" type="password" autocomplete="off" required></label>
-<label>Research question<textarea id="question" required maxlength="2000">How should we handle duplicate webhooks?</textarea></label>
-<button id="submit">Find evidence</button></form><p id="status" role="status"></p><div id="results"></div>
-<script>
-const form=document.getElementById('form'), status=document.getElementById('status'), results=document.getElementById('results'), button=document.getElementById('submit');
-form.onsubmit=async(event)=>{event.preventDefault();button.disabled=true;results.replaceChildren();status.textContent='Searching devices…';try{
-const response=await fetch('/ask',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+document.getElementById('token').value},body:JSON.stringify({question:document.getElementById('question').value})});
-const data=await response.json();if(!response.ok)throw Error(data.error||'Request failed');
-status.textContent=`${data.status}: ${data.message} ${data.latency_ms} ms; ${data.evidence_bytes} evidence bytes. Unavailable workers: ${data.workers.filter(w=>w.status!=='ok').length}.`;
-if(data.answer){const answer=document.createElement('article');answer.textContent='Answer: '+data.answer.status+' — '+data.answer.claims.map(c=>c.text+' ['+c.citations.join(', ')+']').join(' ');results.append(answer);}
-for(const [index,item] of data.evidence.entries()){const card=document.createElement('article'),title=document.createElement('strong'),body=document.createElement('pre');title.textContent=`[${index+1}] ${item.device} / ${item.path}:${item.line}`;body.textContent=item.text;card.append(title,body);results.append(card);}
-}catch(error){status.textContent=error.message;}finally{button.disabled=false;}};
-</script></html>'''
-
-
 def generate_answer(question, evidence, backend, model, endpoint):
     """Citation IDs are validated; claim correctness still requires evaluation."""
     if not evidence:
@@ -164,7 +144,12 @@ def generate_answer(question, evidence, backend, model, endpoint):
     return {"status": "generated" if claims else "abstained", "claims": claims}
 
 
-def make_server(host, port, token, corpus=None, workers=None, model_config=None):
+def make_server(host, port, token, corpus=None, workers=None, model_config=None,
+                lab_model=None, worker_labels=None):
+    from agent_lab import Model, RunStore
+    import telemetry
+    runs = RunStore(workers, token, model=lab_model or (Model(model_config) if model_config else None),
+                    labels=worker_labels) if workers else None
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, *args):
             pass  # Do not log questions, document contents, or tokens.
@@ -183,14 +168,22 @@ def make_server(host, port, token, corpus=None, workers=None, model_config=None)
             if self.path == "/health":
                 return self.respond(200, {"status": "ok", "role": "worker" if corpus else "coordinator"})
             if self.path == "/" and workers:
-                return self.respond(200, PAGE, html=True)
+                return self.respond(200, Path(__file__).with_name("dashboard.html").read_text(encoding="utf-8"), html=True)
+            if self.path.startswith("/runs/") and runs:
+                if not self.authorized():
+                    return self.respond(401, {"error": "Unauthorized"})
+                run = runs.snapshot(self.path.removeprefix("/runs/"))
+                return self.respond(200, run) if run else self.respond(404, {"error": "Run not found"})
             self.respond(404, {"error": "Not found"})
 
+        def authorized(self):
+            return hmac.compare_digest(self.headers.get("Authorization", "").encode(),
+                                       ("Bearer " + token).encode())
+
         def do_POST(self):
-            if not hmac.compare_digest(self.headers.get("Authorization", "").encode(),
-                                       ("Bearer " + token).encode()):
+            if not self.authorized():
                 return self.respond(401, {"error": "Unauthorized"})
-            if self.path != ("/search" if corpus else "/ask"):
+            if self.path not in (["/search"] if corpus else ["/ask", "/runs"]):
                 return self.respond(404, {"error": "Not found"})
             try:
                 size = int(self.headers.get("Content-Length", "0"))
@@ -204,7 +197,17 @@ def make_server(host, port, token, corpus=None, workers=None, model_config=None)
             except (ValueError, OSError):
                 return self.respond(400, {"error": "Expected a question of 1–2000 characters"})
             if corpus:
-                return self.respond(200, {"evidence": corpus.search(question)})
+                with telemetry.span("worker.search", {"worker.device": corpus.device},
+                                    incoming={key.lower(): value for key, value in self.headers.items()}):
+                    return self.respond(200, {"evidence": corpus.search(question)})
+            if self.path == "/runs":
+                try:
+                    run_id = runs.start(question, payload.get("mode", "single"))
+                    return self.respond(202, {"id": run_id})
+                except ValueError as error:
+                    return self.respond(400, {"error": str(error)})
+                except RuntimeError:
+                    return self.respond(429, {"error": "Run capacity reached; retry after a run finishes"})
             result = investigate(question, workers, token)
             if model_config:
                 started = time.perf_counter()
@@ -216,7 +219,9 @@ def make_server(host, port, token, corpus=None, workers=None, model_config=None)
                 result["mode"] = "cited_generation"
             self.respond(200, result)
 
-    return ThreadingHTTPServer((host, port), Handler)
+    server = ThreadingHTTPServer((host, port), Handler)
+    server.runs = runs
+    return server
 
 
 def main():
@@ -230,6 +235,9 @@ def main():
     parser.add_argument("--model-backend", choices=["ollama", "openai"])
     parser.add_argument("--model", default="qwen2.5:3b")
     parser.add_argument("--model-endpoint")
+    parser.add_argument("--worker-labels", nargs="+", help="Unique tool names, one per worker URL")
+    parser.add_argument("--demo-scripted", action="store_true", help="Explicit simulation: no real AI inference")
+    parser.add_argument("--otel-endpoint", help="Optional OTLP HTTP base URL, e.g. http://127.0.0.1:6006")
     args = parser.parse_args()
     token = os.environ.get("RESEARCH_TOKEN", "")
     if len(token) < 24:
@@ -246,6 +254,12 @@ def main():
                     or url.password or url.path not in {"", "/"} or url.query or url.fragment):
                 parser.error("Workers must be HTTP(S) origins without credentials or paths")
         args.workers = [w.rstrip("/") for w in args.workers]
+        if args.worker_labels and (len(args.worker_labels) != len(args.workers)
+                or len(set(args.worker_labels)) != len(args.worker_labels)
+                or any(not re.fullmatch(r"[a-z][a-z0-9_]{0,39}", label) for label in args.worker_labels)):
+            parser.error("Worker labels must be unique lowercase tool names, one per URL")
+    if args.demo_scripted and (args.model_backend or args.role != "coordinator"):
+        parser.error("Scripted simulation is coordinator-only and cannot be combined with a real model")
     corpus = Corpus(args.root, args.device) if args.role == "worker" else None
     config = None
     if args.model_backend:
@@ -256,7 +270,15 @@ def main():
         if args.model_backend == "openai" and not endpoint.startswith("https://"):
             parser.error("Cloud model endpoints require HTTPS")
         config = {"backend": args.model_backend, "model": args.model, "endpoint": endpoint}
-    server = make_server(args.host, args.port, token, corpus, args.workers, config)
+    import telemetry
+    try:
+        telemetry.configure(args.otel_endpoint)
+    except ImportError:
+        parser.error("Install requirements-observability.txt before enabling OpenTelemetry")
+    from agent_lab import ScriptedModel
+    server = make_server(args.host, args.port, token, corpus, args.workers, config,
+                         lab_model=ScriptedModel() if args.demo_scripted else None,
+                         worker_labels=args.worker_labels)
     print(f"{args.role} listening on {args.host}:{args.port}", flush=True)
     try:
         server.serve_forever()
@@ -264,6 +286,7 @@ def main():
         pass
     finally:
         server.server_close()
+        telemetry.flush()
 
 
 if __name__ == "__main__":
