@@ -21,10 +21,11 @@ Tool invocation is structured JSON, not shell execution. The runtime maps names 
 ## Bounded execution
 
 - Two active runs and 32 retained runs per coordinator. Old completed runs are evicted first. Run state lives in memory.
-- Four research searches, one reviewer follow-up search, and eight model calls maximum per agent run. No automatic model-call retries.
+- Four research searches and one reviewer follow-up search. Up to eight normal model calls plus **one** correction call per run (nine total). Only malformed/invalid model responses get a correction attempt; transport failures do not. The correction is visible in activity and consumes the original time budget.
 - 150-second orchestration budget, checked before each operation; individual model socket timeout at most 40 seconds, worker timeout at most three seconds. This is not process-level preemption of a malicious streaming peer.
 - Up to 12 retained evidence passages, each at most 12,000 characters, with a total 24,000-character passage budget. This character budget is not an exact tokenizer budget. Model context must also accommodate instructions and structured metadata; local configuration requests an 8,192-token context and at most 1,000 output tokens per call.
 - Malformed model output fails visibly and retains evidence. Failed reviewer validation never publishes the unreviewed draft as the final answer.
+- Ollama receives a per-step JSON Schema: only configured tool names and current evidence IDs are allowed; the last research step permits only `finish`. A single invalid response can be corrected using static validation feedback. If correction fails, the dashboard shows the specific validation rule without echoing raw model content.
 - Unavailable and unsearched sources remain distinct. A successful answer can still have partial source coverage. Unsupported or uncertain reviewer claims are withheld from the final reviewed answer, with the draft/checks retained for inspection.
 
 ## Observability contract

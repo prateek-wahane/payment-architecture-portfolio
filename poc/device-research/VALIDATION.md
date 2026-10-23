@@ -4,6 +4,8 @@ Prepared on 2026-10-23. Platform: Linux cloud host, Python 3.12.14, system Chrom
 
 ## Verified
 
+Follow-up reliability change: Ollama decoding now uses a per-step JSON Schema instead of unrestricted JSON. The final research step requires a cited answer or abstention, with one visible validation-correction attempt per run. **27 tests passed**, including OTLP integration, and the complete Chromium smoke check passed again. New regressions cover correction to valid citations, finishing after the search budget, schema restrictions, bounded repeated invalid responses, and safe diagnostic messages. Real Qwen behavior still needs to be rechecked on laptop A; a successful `READY` response proves basic inference, not adherence to the agent contract.
+
 - **24 automated tests passed** using an isolated Python environment with the optional OpenTelemetry dependencies installed. The suite includes the original eight retrieval tests, 15 agent-runtime/API tests, and one OTLP wire integration test.
 - The runtime/API tests exercise observation-driven tool calls, rejected arbitrary destinations, invalid citations, finishing before search, bounded repeated searches, reviewer rejection, follow-up and revision, invalid reviewer output, offline sources, run deadline, polling authorization, missing model configuration, bounded history, concurrency, and mocked Ollama protocol/usage parsing.
 - The OTLP test exports real protobuf messages to a local HTTP receiver, verifies the coordinator→tool→worker trace and parent IDs, and confirms that source text, question text and the test access token do not appear in exported spans. The model role in this test is scripted. A real Phoenix service was not started.
