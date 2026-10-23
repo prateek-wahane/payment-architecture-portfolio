@@ -1,0 +1,1056 @@
+{
+  "scope": "Candidate cases, not a reviewed held-out benchmark. Sequential runs; warm/cold state uncontrolled.",
+  "simulation": true,
+  "percentile_method": "p50 median; p95 nearest rank; completed runs only, failures reported separately",
+  "summary": {
+    "baseline": {
+      "runs": 3,
+      "completed": 3,
+      "failed": 0,
+      "completed_p50_ms": 3.23,
+      "completed_p95_ms": 3.58,
+      "quality": "Not scored: requires human review of claims and sources"
+    },
+    "single": {
+      "runs": 3,
+      "completed": 3,
+      "failed": 0,
+      "completed_p50_ms": 1.92,
+      "completed_p95_ms": 2.49,
+      "quality": "Not scored: requires human review of claims and sources"
+    },
+    "review": {
+      "runs": 3,
+      "completed": 3,
+      "failed": 0,
+      "completed_p50_ms": 3.34,
+      "completed_p95_ms": 3.45,
+      "quality": "Not scored: requires human review of claims and sources"
+    }
+  },
+  "results": [
+    {
+      "case_id": "design-01",
+      "mode": "baseline",
+      "state": "completed",
+      "simulation": true,
+      "model": "scripted-demo-no-llm",
+      "elapsed_ms": 3.58,
+      "metrics": {
+        "elapsed_ms": 3.58,
+        "tool_calls": 2,
+        "model_calls": 1,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "usage_available": false,
+        "evidence_bytes": 8614
+      },
+      "abstained": false,
+      "coverage": {
+        "technical_docs": "available",
+        "project_notes": "available"
+      },
+      "claims": [
+        {
+          "text": "Source excerpt: # Business Problems for Production Payment Architecture\n\nThis document lists production-grade payment problems in a business-first format. Each problem can be used as an interview scenario or as a case study in this repository.\n\n---\n\n## 1. Million-user scale problem\n\n### Problem Statement\n\nThe payme",
+          "citations": [
+            1
+          ]
+        },
+        {
+          "text": "Source excerpt: # Case 04: No Duplicate Financial Effect\n\n## Business Problem Statement\n\nDuplicate PSP webhooks create duplicate payment success processing.\n\n## Business Impact\n\nLedger and settlement become unreliable. Finance must manually fix reports.\n\n## Technical Problem Statement\n\nWebhook consumer is not idemp",
+          "citations": [
+            10
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "device": "technical-docs",
+          "path": "01-business-problems.md",
+          "line": 1,
+          "text": "# Business Problems for Production Payment Architecture\n\nThis document lists production-grade payment problems in a business-first format. Each problem can be used as an interview scenario or as a case study in this repository.\n\n---\n\n## 1. Million-user scale problem\n\n### Problem Statement\n\nThe payment platform slows down during peak sale traffic because payment initiation, provider call, fraud check, ledger update, notification, and order update are all executed synchronously.\n\n### Business Statement\n\nCustomers abandon checkout because the payment page is slow or stuck. Revenue drops during high-value sale windows. Leadership loses trust in the platform's ability to handle campaigns and festival traffic.\n\n### Production Symptom\n\n```text\nP95 payment initiation latency increased from 250 ms to 2.5 seconds.\nPSP timeout rate increased from 0.3% to 4%.\nCheckout abandonment increased by 12%.\n```\n\n### Required Solution\n\nIntroduce a payment orchestrator, reduce synchronous path, move non-critical work to async processing, use queue-based retries, provider routing, rate limits, and database partitioning.\n\n---\n",
+          "source": "technical_docs",
+          "id": 1
+        },
+        {
+          "device": "technical-docs",
+          "path": "01-business-problems.md",
+          "line": 41,
+          "text": "### Required Solution\n\nUse idempotency keys, unique order constraints, request hash validation, payment attempt state machine, and provider transaction deduplication.\n\n---\n\n## 3. Near-zero latency problem\n\n### Problem Statement\n\nCustomers expect immediate payment feedback, but backend payment confirmation is slow due to provider latency and synchronous dependency chains.\n\n### Business Statement\n\nCustomers repeatedly click Pay Now or abandon checkout. The platform appears unreliable even when money movement eventually succeeds.\n\n### Required Solution\n\nDesign for near-zero perceived latency, not impossible zero latency. Return payment intent quickly, show pending state, complete financial flow through webhook, status polling, and reconciliation.\n\n---\n\n## 4. Duplicate event problem\n\n### Problem Statement\n\nPSP sends the same payment success webhook multiple times. The system processes all events and creates duplicate ledger entries.\n\n### Business Statement\n",
+          "source": "technical_docs",
+          "id": 2
+        },
+        {
+          "device": "technical-docs",
+          "path": "01-business-problems.md",
+          "line": 21,
+          "text": "PSP timeout rate increased from 0.3% to 4%.\nCheckout abandonment increased by 12%.\n```\n\n### Required Solution\n\nIntroduce a payment orchestrator, reduce synchronous path, move non-critical work to async processing, use queue-based retries, provider routing, rate limits, and database partitioning.\n\n---\n\n## 2. Simultaneous transaction problem\n\n### Problem Statement\n\nMultiple payment requests are generated for the same order because the customer double-clicks, the mobile app retries, and the browser refreshes the payment page.\n\n### Business Statement\n\nCustomers may be charged twice. Support tickets increase. Refund operations increase. Customer trust is damaged.\n\n### Required Solution\n\nUse idempotency keys, unique order constraints, request hash validation, payment attempt state machine, and provider transaction deduplication.\n\n---\n\n## 3. Near-zero latency problem\n\n### Problem Statement\n",
+          "source": "technical_docs",
+          "id": 3
+        },
+        {
+          "device": "technical-docs",
+          "path": "05-simultaneous-transactions.md",
+          "line": 1,
+          "text": "# Simultaneous Transactions\n\n## Business problem\n\nA customer starts multiple payment flows for the same order through browser retries, mobile retry, or double-click behavior.\n\n## Technical problem\n\nThe backend allows more than one active payment attempt for the same order.\n\n## Failure timeline\n\n```text\nT1: Customer clicks Pay Now.\nT2: Payment API call times out at frontend.\nT3: Customer clicks again.\nT4: Backend creates second payment attempt.\nT5: Both attempts reach PSP.\nT6: PSP confirms both.\nT7: Customer is charged twice.\n```\n\n## Solution\n\nUse order-level payment locking and attempt lifecycle rules.\n\n```text\nOnly one active attempt can exist per order.\nA new attempt is allowed only if previous attempt is terminal.\n```",
+          "source": "technical_docs",
+          "id": 4
+        },
+        {
+          "device": "technical-docs",
+          "path": "06-low-latency-design.md",
+          "line": 1,
+          "text": "# Near-Zero Latency Design\n\n## Business problem\n\nCustomers expect fast payment feedback. If the payment page takes too long, customers retry or abandon checkout.\n\n## Architect correction\n\nZero latency is impossible. The realistic goal is:\n\n```text\nnear-zero perceived latency\nlow API latency\ndurable asynchronous completion\nfast customer status visibility\n```\n\n## Critical path budget\n\n```text\nAPI Gateway validation: 20 ms\nIdempotency check: 30 ms\nPayment intent creation: 50 ms\nRisk pre-check: 50 ms\nProvider initiation: 150-300 ms\n```\n\n## Design\n\nKeep the synchronous path minimal.",
+          "source": "technical_docs",
+          "id": 5
+        },
+        {
+          "device": "project-notes",
+          "path": "case-02-simultaneous-transactions.md",
+          "line": 1,
+          "text": "# Case 02: Simultaneous Transactions on Same Order\n\n## Business Problem Statement\n\nA customer creates multiple payment attempts for the same order due to double-clicks and frontend retries.\n\n## Business Impact\n\nCustomer may be charged twice, creating refund cost and trust loss.\n\n## Technical Problem Statement\n\nThe backend allows multiple active payment attempts for one order.\n\n## Production Failure Scenario\n\n```text\nT1 customer clicks Pay\nT2 frontend times out\nT3 customer retries\nT4 second attempt created\nT5 both reach PSP\nT6 both succeed\n```\n\n## Solution\n\nUse idempotency keys, unique order constraints, active-attempt locking, and provider transaction dedupe.\n\n## Production Controls",
+          "source": "project_notes",
+          "id": 6
+        },
+        {
+          "device": "project-notes",
+          "path": "case-03-near-zero-latency.md",
+          "line": 1,
+          "text": "# Case 03: Near-Zero Payment Latency\n\n## Business Problem Statement\n\nCustomers expect instant payment feedback, but checkout appears slow.\n\n## Business Impact\n\nCustomers abandon checkout or retry payment unnecessarily.\n\n## Technical Problem Statement\n\nThe critical request path includes fraud, PSP, ledger, notification, and order update synchronously.\n\n## Production Failure Scenario\n\n```text\nPayment API waits for 5 downstream operations\nProvider latency spikes\nCustomer sees spinner\nCustomer retries\n```\n\n## Solution\n\nMinimize synchronous path and move completion to durable async flow.\n\n## Production Controls\n\n```text",
+          "source": "project_notes",
+          "id": 7
+        },
+        {
+          "device": "project-notes",
+          "path": "case-01-million-user-scale.md",
+          "line": 61,
+          "text": "```text\nAsync completion improves resilience but introduces eventual consistency.\nSynchronous completion is simpler but fragile under latency.\n```\n\n## Revisit Criteria\n\n```text\nP99 > 1s\nUnknown payments > 1%\nQueue lag > 2 minutes\nProvider timeout > 2%\n```\n\n## Interview Explanation\n\n> At 1M+ user scale, I design for peak, retries, and provider instability, not just average throughput.",
+          "source": "project_notes",
+          "id": 8
+        },
+        {
+          "device": "project-notes",
+          "path": "case-03-near-zero-latency.md",
+          "line": 21,
+          "text": "Customer retries\n```\n\n## Solution\n\nMinimize synchronous path and move completion to durable async flow.\n\n## Production Controls\n\n```text\nFast payment intent\nAsync webhook processing\nStatus polling\nPending-first UX\nTimeout budget\n```\n\n## Fallback\n\n```text\nShow confirmation pending\nDisable repeated Pay button\nRun status enquiry\nNotify after final status\n```\n\n## Observability\n\n```text\npayment_intent_latency",
+          "source": "project_notes",
+          "id": 9
+        },
+        {
+          "device": "project-notes",
+          "path": "case-04-no-duplicate-payment.md",
+          "line": 1,
+          "text": "# Case 04: No Duplicate Financial Effect\n\n## Business Problem Statement\n\nDuplicate PSP webhooks create duplicate payment success processing.\n\n## Business Impact\n\nLedger and settlement become unreliable. Finance must manually fix reports.\n\n## Technical Problem Statement\n\nWebhook consumer is not idempotent and re-applies the same financial event.\n\n## Production Failure Scenario\n\n```text\nWebhook success arrives\nLedger entry created\nProvider retries same webhook\nLedger entry created again\n```\n\n## Solution\n\nPersist webhook, deduplicate event, apply state transition once, protect ledger with unique constraints.\n\n## Production Controls\n\n```text",
+          "source": "project_notes",
+          "id": 10
+        }
+      ],
+      "open_questions": [
+        "Scripted simulation: real answer quality has not been evaluated."
+      ],
+      "human_scores": {
+        "correct": null,
+        "supported_claims": null,
+        "total_claims": 2,
+        "notes": ""
+      }
+    },
+    {
+      "case_id": "design-01",
+      "mode": "single",
+      "state": "completed",
+      "simulation": true,
+      "model": "scripted-demo-no-llm",
+      "elapsed_ms": 2.49,
+      "metrics": {
+        "elapsed_ms": 2.49,
+        "tool_calls": 1,
+        "model_calls": 2,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "usage_available": false,
+        "evidence_bytes": 5076
+      },
+      "abstained": false,
+      "coverage": {
+        "technical_docs": "available",
+        "project_notes": "not_searched"
+      },
+      "claims": [
+        {
+          "text": "Source excerpt: # Business Problems for Production Payment Architecture\n\nThis document lists production-grade payment problems in a business-first format. Each problem can be used as an interview scenario or as a case study in this repository.\n\n---\n\n## 1. Million-user scale problem\n\n### Problem Statement\n\nThe payme",
+          "citations": [
+            1
+          ]
+        },
+        {
+          "text": "Source excerpt: ### Required Solution\n\nUse idempotency keys, unique order constraints, request hash validation, payment attempt state machine, and provider transaction deduplication.\n\n---\n\n## 3. Near-zero latency problem\n\n### Problem Statement\n\nCustomers expect immediate payment feedback, but backend payment confir",
+          "citations": [
+            2
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "device": "technical-docs",
+          "path": "01-business-problems.md",
+          "line": 1,
+          "text": "# Business Problems for Production Payment Architecture\n\nThis document lists production-grade payment problems in a business-first format. Each problem can be used as an interview scenario or as a case study in this repository.\n\n---\n\n## 1. Million-user scale problem\n\n### Problem Statement\n\nThe payment platform slows down during peak sale traffic because payment initiation, provider call, fraud check, ledger update, notification, and order update are all executed synchronously.\n\n### Business Statement\n\nCustomers abandon checkout because the payment page is slow or stuck. Revenue drops during high-value sale windows. Leadership loses trust in the platform's ability to handle campaigns and festival traffic.\n\n### Production Symptom\n\n```text\nP95 payment initiation latency increased from 250 ms to 2.5 seconds.\nPSP timeout rate increased from 0.3% to 4%.\nCheckout abandonment increased by 12%.\n```\n\n### Required Solution\n\nIntroduce a payment orchestrator, reduce synchronous path, move non-critical work to async processing, use queue-based retries, provider routing, rate limits, and database partitioning.\n\n---\n",
+          "source": "technical_docs",
+          "id": 1
+        },
+        {
+          "device": "technical-docs",
+          "path": "01-business-problems.md",
+          "line": 41,
+          "text": "### Required Solution\n\nUse idempotency keys, unique order constraints, request hash validation, payment attempt state machine, and provider transaction deduplication.\n\n---\n\n## 3. Near-zero latency problem\n\n### Problem Statement\n\nCustomers expect immediate payment feedback, but backend payment confirmation is slow due to provider latency and synchronous dependency chains.\n\n### Business Statement\n\nCustomers repeatedly click Pay Now or abandon checkout. The platform appears unreliable even when money movement eventually succeeds.\n\n### Required Solution\n\nDesign for near-zero perceived latency, not impossible zero latency. Return payment intent quickly, show pending state, complete financial flow through webhook, status polling, and reconciliation.\n\n---\n\n## 4. Duplicate event problem\n\n### Problem Statement\n\nPSP sends the same payment success webhook multiple times. The system processes all events and creates duplicate ledger entries.\n\n### Business Statement\n",
+          "source": "technical_docs",
+          "id": 2
+        },
+        {
+          "device": "technical-docs",
+          "path": "01-business-problems.md",
+          "line": 21,
+          "text": "PSP timeout rate increased from 0.3% to 4%.\nCheckout abandonment increased by 12%.\n```\n\n### Required Solution\n\nIntroduce a payment orchestrator, reduce synchronous path, move non-critical work to async processing, use queue-based retries, provider routing, rate limits, and database partitioning.\n\n---\n\n## 2. Simultaneous transaction problem\n\n### Problem Statement\n\nMultiple payment requests are generated for the same order because the customer double-clicks, the mobile app retries, and the browser refreshes the payment page.\n\n### Business Statement\n\nCustomers may be charged twice. Support tickets increase. Refund operations increase. Customer trust is damaged.\n\n### Required Solution\n\nUse idempotency keys, unique order constraints, request hash validation, payment attempt state machine, and provider transaction deduplication.\n\n---\n\n## 3. Near-zero latency problem\n\n### Problem Statement\n",
+          "source": "technical_docs",
+          "id": 3
+        },
+        {
+          "device": "technical-docs",
+          "path": "05-simultaneous-transactions.md",
+          "line": 1,
+          "text": "# Simultaneous Transactions\n\n## Business problem\n\nA customer starts multiple payment flows for the same order through browser retries, mobile retry, or double-click behavior.\n\n## Technical problem\n\nThe backend allows more than one active payment attempt for the same order.\n\n## Failure timeline\n\n```text\nT1: Customer clicks Pay Now.\nT2: Payment API call times out at frontend.\nT3: Customer clicks again.\nT4: Backend creates second payment attempt.\nT5: Both attempts reach PSP.\nT6: PSP confirms both.\nT7: Customer is charged twice.\n```\n\n## Solution\n\nUse order-level payment locking and attempt lifecycle rules.\n\n```text\nOnly one active attempt can exist per order.\nA new attempt is allowed only if previous attempt is terminal.\n```",
+          "source": "technical_docs",
+          "id": 4
+        },
+        {
+          "device": "technical-docs",
+          "path": "06-low-latency-design.md",
+          "line": 1,
+          "text": "# Near-Zero Latency Design\n\n## Business problem\n\nCustomers expect fast payment feedback. If the payment page takes too long, customers retry or abandon checkout.\n\n## Architect correction\n\nZero latency is impossible. The realistic goal is:\n\n```text\nnear-zero perceived latency\nlow API latency\ndurable asynchronous completion\nfast customer status visibility\n```\n\n## Critical path budget\n\n```text\nAPI Gateway validation: 20 ms\nIdempotency check: 30 ms\nPayment intent creation: 50 ms\nRisk pre-check: 50 ms\nProvider initiation: 150-300 ms\n```\n\n## Design\n\nKeep the synchronous path minimal.",
+          "source": "technical_docs",
+          "id": 5
+        }
+      ],
+      "open_questions": [
+        "Scripted simulation: real answer quality has not been evaluated."
+      ],
+      "human_scores": {
+        "correct": null,
+        "supported_claims": null,
+        "total_claims": 2,
+        "notes": ""
+      }
+    },
+    {
+      "case_id": "design-01",
+      "mode": "review",
+      "state": "completed",
+      "simulation": true,
+      "model": "scripted-demo-no-llm",
+      "elapsed_ms": 3.45,
+      "metrics": {
+        "elapsed_ms": 3.45,
+        "tool_calls": 2,
+        "model_calls": 5,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "usage_available": false,
+        "evidence_bytes": 8787
+      },
+      "abstained": false,
+      "coverage": {
+        "technical_docs": "available",
+        "project_notes": "available"
+      },
+      "claims": [
+        {
+          "text": "Source excerpt: # Business Problems for Production Payment Architecture\n\nThis document lists production-grade payment problems in a business-first format. Each problem can be used as an interview scenario or as a case study in this repository.\n\n---\n\n## 1. Million-user scale problem\n\n### Problem Statement\n\nThe payme",
+          "citations": [
+            1
+          ]
+        },
+        {
+          "text": "Source excerpt: # Case 03: Near-Zero Payment Latency\n\n## Business Problem Statement\n\nCustomers expect instant payment feedback, but checkout appears slow.\n\n## Business Impact\n\nCustomers abandon checkout or retry payment unnecessarily.\n\n## Technical Problem Statement\n\nThe critical request path includes fraud, PSP, l",
+          "citations": [
+            10
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "device": "technical-docs",
+          "path": "01-business-problems.md",
+          "line": 1,
+          "text": "# Business Problems for Production Payment Architecture\n\nThis document lists production-grade payment problems in a business-first format. Each problem can be used as an interview scenario or as a case study in this repository.\n\n---\n\n## 1. Million-user scale problem\n\n### Problem Statement\n\nThe payment platform slows down during peak sale traffic because payment initiation, provider call, fraud check, ledger update, notification, and order update are all executed synchronously.\n\n### Business Statement\n\nCustomers abandon checkout because the payment page is slow or stuck. Revenue drops during high-value sale windows. Leadership loses trust in the platform's ability to handle campaigns and festival traffic.\n\n### Production Symptom\n\n```text\nP95 payment initiation latency increased from 250 ms to 2.5 seconds.\nPSP timeout rate increased from 0.3% to 4%.\nCheckout abandonment increased by 12%.\n```\n\n### Required Solution\n\nIntroduce a payment orchestrator, reduce synchronous path, move non-critical work to async processing, use queue-based retries, provider routing, rate limits, and database partitioning.\n\n---\n",
+          "source": "technical_docs",
+          "id": 1
+        },
+        {
+          "device": "technical-docs",
+          "path": "01-business-problems.md",
+          "line": 41,
+          "text": "### Required Solution\n\nUse idempotency keys, unique order constraints, request hash validation, payment attempt state machine, and provider transaction deduplication.\n\n---\n\n## 3. Near-zero latency problem\n\n### Problem Statement\n\nCustomers expect immediate payment feedback, but backend payment confirmation is slow due to provider latency and synchronous dependency chains.\n\n### Business Statement\n\nCustomers repeatedly click Pay Now or abandon checkout. The platform appears unreliable even when money movement eventually succeeds.\n\n### Required Solution\n\nDesign for near-zero perceived latency, not impossible zero latency. Return payment intent quickly, show pending state, complete financial flow through webhook, status polling, and reconciliation.\n\n---\n\n## 4. Duplicate event problem\n\n### Problem Statement\n\nPSP sends the same payment success webhook multiple times. The system processes all events and creates duplicate ledger entries.\n\n### Business Statement\n",
+          "source": "technical_docs",
+          "id": 2
+        },
+        {
+          "device": "technical-docs",
+          "path": "01-business-problems.md",
+          "line": 21,
+          "text": "PSP timeout rate increased from 0.3% to 4%.\nCheckout abandonment increased by 12%.\n```\n\n### Required Solution\n\nIntroduce a payment orchestrator, reduce synchronous path, move non-critical work to async processing, use queue-based retries, provider routing, rate limits, and database partitioning.\n\n---\n\n## 2. Simultaneous transaction problem\n\n### Problem Statement\n\nMultiple payment requests are generated for the same order because the customer double-clicks, the mobile app retries, and the browser refreshes the payment page.\n\n### Business Statement\n\nCustomers may be charged twice. Support tickets increase. Refund operations increase. Customer trust is damaged.\n\n### Required Solution\n\nUse idempotency keys, unique order constraints, request hash validation, payment attempt state machine, and provider transaction deduplication.\n\n---\n\n## 3. Near-zero latency problem\n\n### Problem Statement\n",
+          "source": "technical_docs",
+          "id": 3
+        },
+        {
+          "device": "technical-docs",
+          "path": "05-simultaneous-transactions.md",
+          "line": 1,
+          "text": "# Simultaneous Transactions\n\n## Business problem\n\nA customer starts multiple payment flows for the same order through browser retries, mobile retry, or double-click behavior.\n\n## Technical problem\n\nThe backend allows more than one active payment attempt for the same order.\n\n## Failure timeline\n\n```text\nT1: Customer clicks Pay Now.\nT2: Payment API call times out at frontend.\nT3: Customer clicks again.\nT4: Backend creates second payment attempt.\nT5: Both attempts reach PSP.\nT6: PSP confirms both.\nT7: Customer is charged twice.\n```\n\n## Solution\n\nUse order-level payment locking and attempt lifecycle rules.\n\n```text\nOnly one active attempt can exist per order.\nA new attempt is allowed only if previous attempt is terminal.\n```",
+          "source": "technical_docs",
+          "id": 4
+        },
+        {
+          "device": "technical-docs",
+          "path": "06-low-latency-design.md",
+          "line": 1,
+          "text": "# Near-Zero Latency Design\n\n## Business problem\n\nCustomers expect fast payment feedback. If the payment page takes too long, customers retry or abandon checkout.\n\n## Architect correction\n\nZero latency is impossible. The realistic goal is:\n\n```text\nnear-zero perceived latency\nlow API latency\ndurable asynchronous completion\nfast customer status visibility\n```\n\n## Critical path budget\n\n```text\nAPI Gateway validation: 20 ms\nIdempotency check: 30 ms\nPayment intent creation: 50 ms\nRisk pre-check: 50 ms\nProvider initiation: 150-300 ms\n```\n\n## Design\n\nKeep the synchronous path minimal.",
+          "source": "technical_docs",
+          "id": 5
+        },
+        {
+          "device": "project-notes",
+          "path": "case-05-partial-service-failure.md",
+          "line": 1,
+          "text": "# Case 05: Partial Service Failure During Payment\n\n## Business Problem Statement\n\nPayment succeeds but order service is down, leaving order unpaid.\n\n## Business Impact\n\nCustomer money is deducted but order is not confirmed. This severely damages trust.\n\n## Technical Problem Statement\n\nPayment completion depends synchronously on order service.\n\n## Production Failure Scenario\n\n```text\nPSP confirms success\nWebhook arrives\nPayment service calls Order Service\nOrder Service is down\nOrder remains unpaid\n```\n\n## Solution\n\nUse transactional outbox and durable PaymentSucceeded event. Order service consumes idempotently when available.\n\n## Production Controls\n",
+          "source": "project_notes",
+          "id": 6
+        },
+        {
+          "device": "project-notes",
+          "path": "case-02-simultaneous-transactions.md",
+          "line": 1,
+          "text": "# Case 02: Simultaneous Transactions on Same Order\n\n## Business Problem Statement\n\nA customer creates multiple payment attempts for the same order due to double-clicks and frontend retries.\n\n## Business Impact\n\nCustomer may be charged twice, creating refund cost and trust loss.\n\n## Technical Problem Statement\n\nThe backend allows multiple active payment attempts for one order.\n\n## Production Failure Scenario\n\n```text\nT1 customer clicks Pay\nT2 frontend times out\nT3 customer retries\nT4 second attempt created\nT5 both reach PSP\nT6 both succeed\n```\n\n## Solution\n\nUse idempotency keys, unique order constraints, active-attempt locking, and provider transaction dedupe.\n\n## Production Controls",
+          "source": "project_notes",
+          "id": 7
+        },
+        {
+          "device": "project-notes",
+          "path": "case-05-partial-service-failure.md",
+          "line": 21,
+          "text": "Order Service is down\nOrder remains unpaid\n```\n\n## Solution\n\nUse transactional outbox and durable PaymentSucceeded event. Order service consumes idempotently when available.\n\n## Production Controls\n\n```text\nOutbox table\nMessage broker retry\nIdempotent order update\nRepair job\nDLQ\n```\n\n## Fallback\n\n```text\nPayment SUCCESS\nOrder PAYMENT_CONFIRMATION_PENDING\nRetry event\nRun repair job\nAlert ops\n```\n\n## Observability\n",
+          "source": "project_notes",
+          "id": 8
+        },
+        {
+          "device": "project-notes",
+          "path": "case-02-simultaneous-transactions.md",
+          "line": 21,
+          "text": "T4 second attempt created\nT5 both reach PSP\nT6 both succeed\n```\n\n## Solution\n\nUse idempotency keys, unique order constraints, active-attempt locking, and provider transaction dedupe.\n\n## Production Controls\n\n```text\nUNIQUE(merchant_id, order_id)\nUNIQUE(merchant_id, idempotency_key)\nUNIQUE(provider, provider_txn_id)\nState machine transition guard\n```\n\n## Fallback\n\n```text\nFreeze duplicate settlement\nKeep one successful payment\nRefund/reverse duplicate\nNotify support/customer\n```\n\n## Observability\n\n```text",
+          "source": "project_notes",
+          "id": 9
+        },
+        {
+          "device": "project-notes",
+          "path": "case-03-near-zero-latency.md",
+          "line": 1,
+          "text": "# Case 03: Near-Zero Payment Latency\n\n## Business Problem Statement\n\nCustomers expect instant payment feedback, but checkout appears slow.\n\n## Business Impact\n\nCustomers abandon checkout or retry payment unnecessarily.\n\n## Technical Problem Statement\n\nThe critical request path includes fraud, PSP, ledger, notification, and order update synchronously.\n\n## Production Failure Scenario\n\n```text\nPayment API waits for 5 downstream operations\nProvider latency spikes\nCustomer sees spinner\nCustomer retries\n```\n\n## Solution\n\nMinimize synchronous path and move completion to durable async flow.\n\n## Production Controls\n\n```text",
+          "source": "project_notes",
+          "id": 10
+        }
+      ],
+      "open_questions": [
+        "Scripted simulation: real answer quality has not been evaluated."
+      ],
+      "human_scores": {
+        "correct": null,
+        "supported_claims": null,
+        "total_claims": 2,
+        "notes": ""
+      }
+    },
+    {
+      "case_id": "design-02",
+      "mode": "baseline",
+      "state": "completed",
+      "simulation": true,
+      "model": "scripted-demo-no-llm",
+      "elapsed_ms": 3.23,
+      "metrics": {
+        "elapsed_ms": 3.23,
+        "tool_calls": 2,
+        "model_calls": 1,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "usage_available": false,
+        "evidence_bytes": 8220
+      },
+      "abstained": false,
+      "coverage": {
+        "technical_docs": "available",
+        "project_notes": "available"
+      },
+      "claims": [
+        {
+          "text": "Source excerpt: 8. Create payment order and attempt in one transaction.\n9. Store response against idempotency key.\n```\n\n## Duplicate webhook handling\n\n```text\n1. Verify signature.\n2. Store raw event.\n3. Deduplicate using provider_event_id.\n4. Deduplicate business effect using provider_txn_id and event_type.\n5. Appl",
+          "citations": [
+            1
+          ]
+        },
+        {
+          "text": "Source excerpt: Customer retries\n```\n\n## Solution\n\nMinimize synchronous path and move completion to durable async flow.\n\n## Production Controls\n\n```text\nFast payment intent\nAsync webhook processing\nStatus polling\nPending-first UX\nTimeout budget\n```\n\n## Fallback\n\n```text\nShow confirmation pending\nDisable repeated Pa",
+          "citations": [
+            10
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "device": "technical-docs",
+          "path": "04-idempotency-and-duplicates.md",
+          "line": 41,
+          "text": "8. Create payment order and attempt in one transaction.\n9. Store response against idempotency key.\n```\n\n## Duplicate webhook handling\n\n```text\n1. Verify signature.\n2. Store raw event.\n3. Deduplicate using provider_event_id.\n4. Deduplicate business effect using provider_txn_id and event_type.\n5. Apply state transition only if valid.\n6. Return HTTP 200 for already processed duplicate events.\n```\n\n## Anti-patterns\n\n```text\nRelying only on frontend disabling the Pay button.\nTreating timeout as failure.\nCreating a new payment attempt for every retry.\nUpdating ledger without unique transaction constraint.\nAllowing SUCCESS to move backward to PENDING.\n```\n\n## Production-ready answer\n\n> I design duplicate handling at multiple layers: API idempotency, database uniqueness, provider transaction uniqueness, webhook deduplication, state-machine transition control, and append-only ledger constraints. The goal is that the same financial event can be replayed multiple times but creates financial impact only once.",
+          "source": "technical_docs",
+          "id": 1
+        },
+        {
+          "device": "technical-docs",
+          "path": "01-business-problems.md",
+          "line": 41,
+          "text": "### Required Solution\n\nUse idempotency keys, unique order constraints, request hash validation, payment attempt state machine, and provider transaction deduplication.\n\n---\n\n## 3. Near-zero latency problem\n\n### Problem Statement\n\nCustomers expect immediate payment feedback, but backend payment confirmation is slow due to provider latency and synchronous dependency chains.\n\n### Business Statement\n\nCustomers repeatedly click Pay Now or abandon checkout. The platform appears unreliable even when money movement eventually succeeds.\n\n### Required Solution\n\nDesign for near-zero perceived latency, not impossible zero latency. Return payment intent quickly, show pending state, complete financial flow through webhook, status polling, and reconciliation.\n\n---\n\n## 4. Duplicate event problem\n\n### Problem Statement\n\nPSP sends the same payment success webhook multiple times. The system processes all events and creates duplicate ledger entries.\n\n### Business Statement\n",
+          "source": "technical_docs",
+          "id": 2
+        },
+        {
+          "device": "technical-docs",
+          "path": "01-business-problems.md",
+          "line": 61,
+          "text": "---\n\n## 4. Duplicate event problem\n\n### Problem Statement\n\nPSP sends the same payment success webhook multiple times. The system processes all events and creates duplicate ledger entries.\n\n### Business Statement\n\nSettlement reports become incorrect. Finance teams lose confidence in automated reports. Manual reconciliation workload increases.\n\n### Required Solution\n\nPersist raw webhook first, verify signature, deduplicate using provider event ID and provider transaction ID, and protect ledger writes using unique financial constraints.\n\n---\n\n## 5. Partial service failure problem\n\n### Problem Statement\n\nPayment succeeds at the provider, but the order service is unavailable. Payment is successful, but the order remains unpaid.\n\n### Business Statement\n\nThe customer says money was deducted but the order is not confirmed. This is one of the most damaging payment incidents from a customer trust perspective.\n\n### Required Solution\n",
+          "source": "technical_docs",
+          "id": 3
+        },
+        {
+          "device": "technical-docs",
+          "path": "05-simultaneous-transactions.md",
+          "line": 41,
+          "text": "\n```text\nCREATED\nINITIATED\nPENDING\nAUTHORIZED\nSUCCESS\nUNKNOWN\n```\n\n## Implementation\n\n```sql\nCREATE UNIQUE INDEX uq_payment_order_active\nON payment_order(merchant_id, order_id);\n```\n\nFor advanced retry:\n\n```text\npayment_order has one logical payment.\npayment_attempt can have multiple rows.\nOnly one payment_attempt can be ACTIVE at a time.\n```\n\n## Tradeoff\n\nStrict locking prevents duplicate charges but can block legitimate retries when an attempt is stuck.  \nThe remedy is to use a clear expiry/timeout policy and provider status enquiry before allowing another attempt.",
+          "source": "technical_docs",
+          "id": 4
+        },
+        {
+          "device": "technical-docs",
+          "path": "05-simultaneous-transactions.md",
+          "line": 61,
+          "text": "payment_order has one logical payment.\npayment_attempt can have multiple rows.\nOnly one payment_attempt can be ACTIVE at a time.\n```\n\n## Tradeoff\n\nStrict locking prevents duplicate charges but can block legitimate retries when an attempt is stuck.  \nThe remedy is to use a clear expiry/timeout policy and provider status enquiry before allowing another attempt.",
+          "source": "technical_docs",
+          "id": 5
+        },
+        {
+          "device": "project-notes",
+          "path": "case-05-partial-service-failure.md",
+          "line": 1,
+          "text": "# Case 05: Partial Service Failure During Payment\n\n## Business Problem Statement\n\nPayment succeeds but order service is down, leaving order unpaid.\n\n## Business Impact\n\nCustomer money is deducted but order is not confirmed. This severely damages trust.\n\n## Technical Problem Statement\n\nPayment completion depends synchronously on order service.\n\n## Production Failure Scenario\n\n```text\nPSP confirms success\nWebhook arrives\nPayment service calls Order Service\nOrder Service is down\nOrder remains unpaid\n```\n\n## Solution\n\nUse transactional outbox and durable PaymentSucceeded event. Order service consumes idempotently when available.\n\n## Production Controls\n",
+          "source": "project_notes",
+          "id": 6
+        },
+        {
+          "device": "project-notes",
+          "path": "case-02-simultaneous-transactions.md",
+          "line": 1,
+          "text": "# Case 02: Simultaneous Transactions on Same Order\n\n## Business Problem Statement\n\nA customer creates multiple payment attempts for the same order due to double-clicks and frontend retries.\n\n## Business Impact\n\nCustomer may be charged twice, creating refund cost and trust loss.\n\n## Technical Problem Statement\n\nThe backend allows multiple active payment attempts for one order.\n\n## Production Failure Scenario\n\n```text\nT1 customer clicks Pay\nT2 frontend times out\nT3 customer retries\nT4 second attempt created\nT5 both reach PSP\nT6 both succeed\n```\n\n## Solution\n\nUse idempotency keys, unique order constraints, active-attempt locking, and provider transaction dedupe.\n\n## Production Controls",
+          "source": "project_notes",
+          "id": 7
+        },
+        {
+          "device": "project-notes",
+          "path": "case-02-simultaneous-transactions.md",
+          "line": 21,
+          "text": "T4 second attempt created\nT5 both reach PSP\nT6 both succeed\n```\n\n## Solution\n\nUse idempotency keys, unique order constraints, active-attempt locking, and provider transaction dedupe.\n\n## Production Controls\n\n```text\nUNIQUE(merchant_id, order_id)\nUNIQUE(merchant_id, idempotency_key)\nUNIQUE(provider, provider_txn_id)\nState machine transition guard\n```\n\n## Fallback\n\n```text\nFreeze duplicate settlement\nKeep one successful payment\nRefund/reverse duplicate\nNotify support/customer\n```\n\n## Observability\n\n```text",
+          "source": "project_notes",
+          "id": 8
+        },
+        {
+          "device": "project-notes",
+          "path": "case-02-simultaneous-transactions.md",
+          "line": 41,
+          "text": "```text\nFreeze duplicate settlement\nKeep one successful payment\nRefund/reverse duplicate\nNotify support/customer\n```\n\n## Observability\n\n```text\nduplicate_attempt_count\nmultiple_success_same_order\nrefund_due_to_duplicate\nidempotency_conflict_count\n```\n\n## Tradeoffs\n\n```text\nStrict locking prevents duplicate charge but may block legitimate retry while previous attempt is stuck.\n```\n\n## Revisit Criteria\n\n```text\nDuplicate complaints > 0\nMultiple successful attempts for same order\nManual refunds increasing\n```\n",
+          "source": "project_notes",
+          "id": 9
+        },
+        {
+          "device": "project-notes",
+          "path": "case-03-near-zero-latency.md",
+          "line": 21,
+          "text": "Customer retries\n```\n\n## Solution\n\nMinimize synchronous path and move completion to durable async flow.\n\n## Production Controls\n\n```text\nFast payment intent\nAsync webhook processing\nStatus polling\nPending-first UX\nTimeout budget\n```\n\n## Fallback\n\n```text\nShow confirmation pending\nDisable repeated Pay button\nRun status enquiry\nNotify after final status\n```\n\n## Observability\n\n```text\npayment_intent_latency",
+          "source": "project_notes",
+          "id": 10
+        }
+      ],
+      "open_questions": [
+        "Scripted simulation: real answer quality has not been evaluated."
+      ],
+      "human_scores": {
+        "correct": null,
+        "supported_claims": null,
+        "total_claims": 2,
+        "notes": ""
+      }
+    },
+    {
+      "case_id": "design-02",
+      "mode": "single",
+      "state": "completed",
+      "simulation": true,
+      "model": "scripted-demo-no-llm",
+      "elapsed_ms": 1.92,
+      "metrics": {
+        "elapsed_ms": 1.92,
+        "tool_calls": 1,
+        "model_calls": 2,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "usage_available": false,
+        "evidence_bytes": 4625
+      },
+      "abstained": false,
+      "coverage": {
+        "technical_docs": "available",
+        "project_notes": "not_searched"
+      },
+      "claims": [
+        {
+          "text": "Source excerpt: 8. Create payment order and attempt in one transaction.\n9. Store response against idempotency key.\n```\n\n## Duplicate webhook handling\n\n```text\n1. Verify signature.\n2. Store raw event.\n3. Deduplicate using provider_event_id.\n4. Deduplicate business effect using provider_txn_id and event_type.\n5. Appl",
+          "citations": [
+            1
+          ]
+        },
+        {
+          "text": "Source excerpt: ### Required Solution\n\nUse idempotency keys, unique order constraints, request hash validation, payment attempt state machine, and provider transaction deduplication.\n\n---\n\n## 3. Near-zero latency problem\n\n### Problem Statement\n\nCustomers expect immediate payment feedback, but backend payment confir",
+          "citations": [
+            2
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "device": "technical-docs",
+          "path": "04-idempotency-and-duplicates.md",
+          "line": 41,
+          "text": "8. Create payment order and attempt in one transaction.\n9. Store response against idempotency key.\n```\n\n## Duplicate webhook handling\n\n```text\n1. Verify signature.\n2. Store raw event.\n3. Deduplicate using provider_event_id.\n4. Deduplicate business effect using provider_txn_id and event_type.\n5. Apply state transition only if valid.\n6. Return HTTP 200 for already processed duplicate events.\n```\n\n## Anti-patterns\n\n```text\nRelying only on frontend disabling the Pay button.\nTreating timeout as failure.\nCreating a new payment attempt for every retry.\nUpdating ledger without unique transaction constraint.\nAllowing SUCCESS to move backward to PENDING.\n```\n\n## Production-ready answer\n\n> I design duplicate handling at multiple layers: API idempotency, database uniqueness, provider transaction uniqueness, webhook deduplication, state-machine transition control, and append-only ledger constraints. The goal is that the same financial event can be replayed multiple times but creates financial impact only once.",
+          "source": "technical_docs",
+          "id": 1
+        },
+        {
+          "device": "technical-docs",
+          "path": "01-business-problems.md",
+          "line": 41,
+          "text": "### Required Solution\n\nUse idempotency keys, unique order constraints, request hash validation, payment attempt state machine, and provider transaction deduplication.\n\n---\n\n## 3. Near-zero latency problem\n\n### Problem Statement\n\nCustomers expect immediate payment feedback, but backend payment confirmation is slow due to provider latency and synchronous dependency chains.\n\n### Business Statement\n\nCustomers repeatedly click Pay Now or abandon checkout. The platform appears unreliable even when money movement eventually succeeds.\n\n### Required Solution\n\nDesign for near-zero perceived latency, not impossible zero latency. Return payment intent quickly, show pending state, complete financial flow through webhook, status polling, and reconciliation.\n\n---\n\n## 4. Duplicate event problem\n\n### Problem Statement\n\nPSP sends the same payment success webhook multiple times. The system processes all events and creates duplicate ledger entries.\n\n### Business Statement\n",
+          "source": "technical_docs",
+          "id": 2
+        },
+        {
+          "device": "technical-docs",
+          "path": "01-business-problems.md",
+          "line": 61,
+          "text": "---\n\n## 4. Duplicate event problem\n\n### Problem Statement\n\nPSP sends the same payment success webhook multiple times. The system processes all events and creates duplicate ledger entries.\n\n### Business Statement\n\nSettlement reports become incorrect. Finance teams lose confidence in automated reports. Manual reconciliation workload increases.\n\n### Required Solution\n\nPersist raw webhook first, verify signature, deduplicate using provider event ID and provider transaction ID, and protect ledger writes using unique financial constraints.\n\n---\n\n## 5. Partial service failure problem\n\n### Problem Statement\n\nPayment succeeds at the provider, but the order service is unavailable. Payment is successful, but the order remains unpaid.\n\n### Business Statement\n\nThe customer says money was deducted but the order is not confirmed. This is one of the most damaging payment incidents from a customer trust perspective.\n\n### Required Solution\n",
+          "source": "technical_docs",
+          "id": 3
+        },
+        {
+          "device": "technical-docs",
+          "path": "05-simultaneous-transactions.md",
+          "line": 41,
+          "text": "\n```text\nCREATED\nINITIATED\nPENDING\nAUTHORIZED\nSUCCESS\nUNKNOWN\n```\n\n## Implementation\n\n```sql\nCREATE UNIQUE INDEX uq_payment_order_active\nON payment_order(merchant_id, order_id);\n```\n\nFor advanced retry:\n\n```text\npayment_order has one logical payment.\npayment_attempt can have multiple rows.\nOnly one payment_attempt can be ACTIVE at a time.\n```\n\n## Tradeoff\n\nStrict locking prevents duplicate charges but can block legitimate retries when an attempt is stuck.  \nThe remedy is to use a clear expiry/timeout policy and provider status enquiry before allowing another attempt.",
+          "source": "technical_docs",
+          "id": 4
+        },
+        {
+          "device": "technical-docs",
+          "path": "05-simultaneous-transactions.md",
+          "line": 61,
+          "text": "payment_order has one logical payment.\npayment_attempt can have multiple rows.\nOnly one payment_attempt can be ACTIVE at a time.\n```\n\n## Tradeoff\n\nStrict locking prevents duplicate charges but can block legitimate retries when an attempt is stuck.  \nThe remedy is to use a clear expiry/timeout policy and provider status enquiry before allowing another attempt.",
+          "source": "technical_docs",
+          "id": 5
+        }
+      ],
+      "open_questions": [
+        "Scripted simulation: real answer quality has not been evaluated."
+      ],
+      "human_scores": {
+        "correct": null,
+        "supported_claims": null,
+        "total_claims": 2,
+        "notes": ""
+      }
+    },
+    {
+      "case_id": "design-02",
+      "mode": "review",
+      "state": "completed",
+      "simulation": true,
+      "model": "scripted-demo-no-llm",
+      "elapsed_ms": 3.34,
+      "metrics": {
+        "elapsed_ms": 3.34,
+        "tool_calls": 2,
+        "model_calls": 5,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "usage_available": false,
+        "evidence_bytes": 8336
+      },
+      "abstained": false,
+      "coverage": {
+        "technical_docs": "available",
+        "project_notes": "available"
+      },
+      "claims": [
+        {
+          "text": "Source excerpt: 8. Create payment order and attempt in one transaction.\n9. Store response against idempotency key.\n```\n\n## Duplicate webhook handling\n\n```text\n1. Verify signature.\n2. Store raw event.\n3. Deduplicate using provider_event_id.\n4. Deduplicate business effect using provider_txn_id and event_type.\n5. Appl",
+          "citations": [
+            1
+          ]
+        },
+        {
+          "text": "Source excerpt: # Case 03: Near-Zero Payment Latency\n\n## Business Problem Statement\n\nCustomers expect instant payment feedback, but checkout appears slow.\n\n## Business Impact\n\nCustomers abandon checkout or retry payment unnecessarily.\n\n## Technical Problem Statement\n\nThe critical request path includes fraud, PSP, l",
+          "citations": [
+            10
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "device": "technical-docs",
+          "path": "04-idempotency-and-duplicates.md",
+          "line": 41,
+          "text": "8. Create payment order and attempt in one transaction.\n9. Store response against idempotency key.\n```\n\n## Duplicate webhook handling\n\n```text\n1. Verify signature.\n2. Store raw event.\n3. Deduplicate using provider_event_id.\n4. Deduplicate business effect using provider_txn_id and event_type.\n5. Apply state transition only if valid.\n6. Return HTTP 200 for already processed duplicate events.\n```\n\n## Anti-patterns\n\n```text\nRelying only on frontend disabling the Pay button.\nTreating timeout as failure.\nCreating a new payment attempt for every retry.\nUpdating ledger without unique transaction constraint.\nAllowing SUCCESS to move backward to PENDING.\n```\n\n## Production-ready answer\n\n> I design duplicate handling at multiple layers: API idempotency, database uniqueness, provider transaction uniqueness, webhook deduplication, state-machine transition control, and append-only ledger constraints. The goal is that the same financial event can be replayed multiple times but creates financial impact only once.",
+          "source": "technical_docs",
+          "id": 1
+        },
+        {
+          "device": "technical-docs",
+          "path": "01-business-problems.md",
+          "line": 41,
+          "text": "### Required Solution\n\nUse idempotency keys, unique order constraints, request hash validation, payment attempt state machine, and provider transaction deduplication.\n\n---\n\n## 3. Near-zero latency problem\n\n### Problem Statement\n\nCustomers expect immediate payment feedback, but backend payment confirmation is slow due to provider latency and synchronous dependency chains.\n\n### Business Statement\n\nCustomers repeatedly click Pay Now or abandon checkout. The platform appears unreliable even when money movement eventually succeeds.\n\n### Required Solution\n\nDesign for near-zero perceived latency, not impossible zero latency. Return payment intent quickly, show pending state, complete financial flow through webhook, status polling, and reconciliation.\n\n---\n\n## 4. Duplicate event problem\n\n### Problem Statement\n\nPSP sends the same payment success webhook multiple times. The system processes all events and creates duplicate ledger entries.\n\n### Business Statement\n",
+          "source": "technical_docs",
+          "id": 2
+        },
+        {
+          "device": "technical-docs",
+          "path": "01-business-problems.md",
+          "line": 61,
+          "text": "---\n\n## 4. Duplicate event problem\n\n### Problem Statement\n\nPSP sends the same payment success webhook multiple times. The system processes all events and creates duplicate ledger entries.\n\n### Business Statement\n\nSettlement reports become incorrect. Finance teams lose confidence in automated reports. Manual reconciliation workload increases.\n\n### Required Solution\n\nPersist raw webhook first, verify signature, deduplicate using provider event ID and provider transaction ID, and protect ledger writes using unique financial constraints.\n\n---\n\n## 5. Partial service failure problem\n\n### Problem Statement\n\nPayment succeeds at the provider, but the order service is unavailable. Payment is successful, but the order remains unpaid.\n\n### Business Statement\n\nThe customer says money was deducted but the order is not confirmed. This is one of the most damaging payment incidents from a customer trust perspective.\n\n### Required Solution\n",
+          "source": "technical_docs",
+          "id": 3
+        },
+        {
+          "device": "technical-docs",
+          "path": "05-simultaneous-transactions.md",
+          "line": 41,
+          "text": "\n```text\nCREATED\nINITIATED\nPENDING\nAUTHORIZED\nSUCCESS\nUNKNOWN\n```\n\n## Implementation\n\n```sql\nCREATE UNIQUE INDEX uq_payment_order_active\nON payment_order(merchant_id, order_id);\n```\n\nFor advanced retry:\n\n```text\npayment_order has one logical payment.\npayment_attempt can have multiple rows.\nOnly one payment_attempt can be ACTIVE at a time.\n```\n\n## Tradeoff\n\nStrict locking prevents duplicate charges but can block legitimate retries when an attempt is stuck.  \nThe remedy is to use a clear expiry/timeout policy and provider status enquiry before allowing another attempt.",
+          "source": "technical_docs",
+          "id": 4
+        },
+        {
+          "device": "technical-docs",
+          "path": "05-simultaneous-transactions.md",
+          "line": 61,
+          "text": "payment_order has one logical payment.\npayment_attempt can have multiple rows.\nOnly one payment_attempt can be ACTIVE at a time.\n```\n\n## Tradeoff\n\nStrict locking prevents duplicate charges but can block legitimate retries when an attempt is stuck.  \nThe remedy is to use a clear expiry/timeout policy and provider status enquiry before allowing another attempt.",
+          "source": "technical_docs",
+          "id": 5
+        },
+        {
+          "device": "project-notes",
+          "path": "case-05-partial-service-failure.md",
+          "line": 1,
+          "text": "# Case 05: Partial Service Failure During Payment\n\n## Business Problem Statement\n\nPayment succeeds but order service is down, leaving order unpaid.\n\n## Business Impact\n\nCustomer money is deducted but order is not confirmed. This severely damages trust.\n\n## Technical Problem Statement\n\nPayment completion depends synchronously on order service.\n\n## Production Failure Scenario\n\n```text\nPSP confirms success\nWebhook arrives\nPayment service calls Order Service\nOrder Service is down\nOrder remains unpaid\n```\n\n## Solution\n\nUse transactional outbox and durable PaymentSucceeded event. Order service consumes idempotently when available.\n\n## Production Controls\n",
+          "source": "project_notes",
+          "id": 6
+        },
+        {
+          "device": "project-notes",
+          "path": "case-02-simultaneous-transactions.md",
+          "line": 1,
+          "text": "# Case 02: Simultaneous Transactions on Same Order\n\n## Business Problem Statement\n\nA customer creates multiple payment attempts for the same order due to double-clicks and frontend retries.\n\n## Business Impact\n\nCustomer may be charged twice, creating refund cost and trust loss.\n\n## Technical Problem Statement\n\nThe backend allows multiple active payment attempts for one order.\n\n## Production Failure Scenario\n\n```text\nT1 customer clicks Pay\nT2 frontend times out\nT3 customer retries\nT4 second attempt created\nT5 both reach PSP\nT6 both succeed\n```\n\n## Solution\n\nUse idempotency keys, unique order constraints, active-attempt locking, and provider transaction dedupe.\n\n## Production Controls",
+          "source": "project_notes",
+          "id": 7
+        },
+        {
+          "device": "project-notes",
+          "path": "case-05-partial-service-failure.md",
+          "line": 21,
+          "text": "Order Service is down\nOrder remains unpaid\n```\n\n## Solution\n\nUse transactional outbox and durable PaymentSucceeded event. Order service consumes idempotently when available.\n\n## Production Controls\n\n```text\nOutbox table\nMessage broker retry\nIdempotent order update\nRepair job\nDLQ\n```\n\n## Fallback\n\n```text\nPayment SUCCESS\nOrder PAYMENT_CONFIRMATION_PENDING\nRetry event\nRun repair job\nAlert ops\n```\n\n## Observability\n",
+          "source": "project_notes",
+          "id": 8
+        },
+        {
+          "device": "project-notes",
+          "path": "case-02-simultaneous-transactions.md",
+          "line": 21,
+          "text": "T4 second attempt created\nT5 both reach PSP\nT6 both succeed\n```\n\n## Solution\n\nUse idempotency keys, unique order constraints, active-attempt locking, and provider transaction dedupe.\n\n## Production Controls\n\n```text\nUNIQUE(merchant_id, order_id)\nUNIQUE(merchant_id, idempotency_key)\nUNIQUE(provider, provider_txn_id)\nState machine transition guard\n```\n\n## Fallback\n\n```text\nFreeze duplicate settlement\nKeep one successful payment\nRefund/reverse duplicate\nNotify support/customer\n```\n\n## Observability\n\n```text",
+          "source": "project_notes",
+          "id": 9
+        },
+        {
+          "device": "project-notes",
+          "path": "case-03-near-zero-latency.md",
+          "line": 1,
+          "text": "# Case 03: Near-Zero Payment Latency\n\n## Business Problem Statement\n\nCustomers expect instant payment feedback, but checkout appears slow.\n\n## Business Impact\n\nCustomers abandon checkout or retry payment unnecessarily.\n\n## Technical Problem Statement\n\nThe critical request path includes fraud, PSP, ledger, notification, and order update synchronously.\n\n## Production Failure Scenario\n\n```text\nPayment API waits for 5 downstream operations\nProvider latency spikes\nCustomer sees spinner\nCustomer retries\n```\n\n## Solution\n\nMinimize synchronous path and move completion to durable async flow.\n\n## Production Controls\n\n```text",
+          "source": "project_notes",
+          "id": 10
+        }
+      ],
+      "open_questions": [
+        "Scripted simulation: real answer quality has not been evaluated."
+      ],
+      "human_scores": {
+        "correct": null,
+        "supported_claims": null,
+        "total_claims": 2,
+        "notes": ""
+      }
+    },
+    {
+      "case_id": "design-03",
+      "mode": "baseline",
+      "state": "completed",
+      "simulation": true,
+      "model": "scripted-demo-no-llm",
+      "elapsed_ms": 3.0,
+      "metrics": {
+        "elapsed_ms": 3.0,
+        "tool_calls": 2,
+        "model_calls": 1,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "usage_available": false,
+        "evidence_bytes": 7848
+      },
+      "abstained": false,
+      "coverage": {
+        "technical_docs": "available",
+        "project_notes": "available"
+      },
+      "claims": [
+        {
+          "text": "Source excerpt: 8. Create payment order and attempt in one transaction.\n9. Store response against idempotency key.\n```\n\n## Duplicate webhook handling\n\n```text\n1. Verify signature.\n2. Store raw event.\n3. Deduplicate using provider_event_id.\n4. Deduplicate business effect using provider_txn_id and event_type.\n5. Appl",
+          "citations": [
+            1
+          ]
+        },
+        {
+          "text": "Source excerpt: ```\n\n## Revisit Criteria\n\n```text\nDuplicate complaints > 0\nMultiple successful attempts for same order\nManual refunds increasing\n```\n\n## Interview Explanation\n\n> I never rely on the frontend for duplicate prevention. The backend must guarantee no duplicate financial effect.",
+          "citations": [
+            10
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "device": "technical-docs",
+          "path": "04-idempotency-and-duplicates.md",
+          "line": 41,
+          "text": "8. Create payment order and attempt in one transaction.\n9. Store response against idempotency key.\n```\n\n## Duplicate webhook handling\n\n```text\n1. Verify signature.\n2. Store raw event.\n3. Deduplicate using provider_event_id.\n4. Deduplicate business effect using provider_txn_id and event_type.\n5. Apply state transition only if valid.\n6. Return HTTP 200 for already processed duplicate events.\n```\n\n## Anti-patterns\n\n```text\nRelying only on frontend disabling the Pay button.\nTreating timeout as failure.\nCreating a new payment attempt for every retry.\nUpdating ledger without unique transaction constraint.\nAllowing SUCCESS to move backward to PENDING.\n```\n\n## Production-ready answer\n\n> I design duplicate handling at multiple layers: API idempotency, database uniqueness, provider transaction uniqueness, webhook deduplication, state-machine transition control, and append-only ledger constraints. The goal is that the same financial event can be replayed multiple times but creates financial impact only once.",
+          "source": "technical_docs",
+          "id": 1
+        },
+        {
+          "device": "technical-docs",
+          "path": "01-business-problems.md",
+          "line": 41,
+          "text": "### Required Solution\n\nUse idempotency keys, unique order constraints, request hash validation, payment attempt state machine, and provider transaction deduplication.\n\n---\n\n## 3. Near-zero latency problem\n\n### Problem Statement\n\nCustomers expect immediate payment feedback, but backend payment confirmation is slow due to provider latency and synchronous dependency chains.\n\n### Business Statement\n\nCustomers repeatedly click Pay Now or abandon checkout. The platform appears unreliable even when money movement eventually succeeds.\n\n### Required Solution\n\nDesign for near-zero perceived latency, not impossible zero latency. Return payment intent quickly, show pending state, complete financial flow through webhook, status polling, and reconciliation.\n\n---\n\n## 4. Duplicate event problem\n\n### Problem Statement\n\nPSP sends the same payment success webhook multiple times. The system processes all events and creates duplicate ledger entries.\n\n### Business Statement\n",
+          "source": "technical_docs",
+          "id": 2
+        },
+        {
+          "device": "technical-docs",
+          "path": "03-system-architecture.md",
+          "line": 61,
+          "text": "## Async path\n\n```text\nWebhook processing\nLedger posting\nOrder confirmation\nNotification\nReconciliation\nSettlement\nAnalytics\n```\n\n## Component responsibilities\n\n### Payment Orchestrator\n\nOwns payment lifecycle, state machine, idempotency, provider routing, and event emission.\n\n### PSP Adapter\n\nIsolates provider-specific API contracts, authentication, signing, status mapping, and retries.\n\n### Webhook Processor\n\nReceives external provider events, validates signature, persists raw event, deduplicates, and triggers state transition.\n\n### Ledger Service\n\nMaintains append-only financial entries. No deletes. Corrections are reversals.\n",
+          "source": "technical_docs",
+          "id": 3
+        },
+        {
+          "device": "technical-docs",
+          "path": "03-system-architecture.md",
+          "line": 81,
+          "text": "Isolates provider-specific API contracts, authentication, signing, status mapping, and retries.\n\n### Webhook Processor\n\nReceives external provider events, validates signature, persists raw event, deduplicates, and triggers state transition.\n\n### Ledger Service\n\nMaintains append-only financial entries. No deletes. Corrections are reversals.\n\n### Reconciliation Engine\n\nCompares internal ledger, PSP settlement report, and bank statement.\n\n### Settlement Service\n\nGroups settled transactions, calculates fees/taxes, and generates merchant payout batches.\n\n### Observability Stack\n\nCaptures metrics, logs, traces, business events, and alerts.\n\n## Architecture decision\n\nCustomer-facing flow can be fast, but financial completion must be durable and correct.",
+          "source": "technical_docs",
+          "id": 4
+        },
+        {
+          "device": "technical-docs",
+          "path": "04-idempotency-and-duplicates.md",
+          "line": 61,
+          "text": "Creating a new payment attempt for every retry.\nUpdating ledger without unique transaction constraint.\nAllowing SUCCESS to move backward to PENDING.\n```\n\n## Production-ready answer\n\n> I design duplicate handling at multiple layers: API idempotency, database uniqueness, provider transaction uniqueness, webhook deduplication, state-machine transition control, and append-only ledger constraints. The goal is that the same financial event can be replayed multiple times but creates financial impact only once.",
+          "source": "technical_docs",
+          "id": 5
+        },
+        {
+          "device": "project-notes",
+          "path": "case-04-no-duplicate-payment.md",
+          "line": 1,
+          "text": "# Case 04: No Duplicate Financial Effect\n\n## Business Problem Statement\n\nDuplicate PSP webhooks create duplicate payment success processing.\n\n## Business Impact\n\nLedger and settlement become unreliable. Finance must manually fix reports.\n\n## Technical Problem Statement\n\nWebhook consumer is not idempotent and re-applies the same financial event.\n\n## Production Failure Scenario\n\n```text\nWebhook success arrives\nLedger entry created\nProvider retries same webhook\nLedger entry created again\n```\n\n## Solution\n\nPersist webhook, deduplicate event, apply state transition once, protect ledger with unique constraints.\n\n## Production Controls\n\n```text",
+          "source": "project_notes",
+          "id": 6
+        },
+        {
+          "device": "project-notes",
+          "path": "case-04-no-duplicate-payment.md",
+          "line": 21,
+          "text": "Ledger entry created again\n```\n\n## Solution\n\nPersist webhook, deduplicate event, apply state transition once, protect ledger with unique constraints.\n\n## Production Controls\n\n```text\nUNIQUE(provider, provider_event_id)\nUNIQUE(transaction_id, account_id, entry_type, event_type)\nIdempotent webhook consumer\nState dominance rules\n```\n\n## Fallback\n\n```text\nStop settlement batch\nCreate reversal entries\nRe-run reconciliation\nAlert on duplicate financial effect\n```\n\n## Observability\n\n```text\nduplicate_webhook_count\nledger_duplicate_reject_count",
+          "source": "project_notes",
+          "id": 7
+        },
+        {
+          "device": "project-notes",
+          "path": "case-04-no-duplicate-payment.md",
+          "line": 41,
+          "text": "Create reversal entries\nRe-run reconciliation\nAlert on duplicate financial effect\n```\n\n## Observability\n\n```text\nduplicate_webhook_count\nledger_duplicate_reject_count\nreversal_count\nreconciliation_mismatch\n```\n\n## Tradeoffs\n\n```text\nProvider-event dedupe is simple but may not catch duplicate business events with different event IDs.\n```\n\n## Revisit Criteria\n\n```text\nDuplicate provider behavior changes\nReconciliation mismatch caused by duplicate events\n```\n\n## Interview Explanation\n\n> Duplicate delivery is expected. The system must be at-least-once tolerant and effectively-once at business level.",
+          "source": "project_notes",
+          "id": 8
+        },
+        {
+          "device": "project-notes",
+          "path": "case-05-partial-service-failure.md",
+          "line": 61,
+          "text": "Event-driven design improves resilience but introduces eventual consistency.\n```\n\n## Revisit Criteria\n\n```text\nMismatch count exceeds threshold\nOrder consumer lag increases\nRepair job volume increases\n```\n\n## Interview Explanation\n\n> A downstream outage must not cause loss of payment success. I persist financial truth first, then propagate events durably.",
+          "source": "project_notes",
+          "id": 9
+        },
+        {
+          "device": "project-notes",
+          "path": "case-02-simultaneous-transactions.md",
+          "line": 61,
+          "text": "```\n\n## Revisit Criteria\n\n```text\nDuplicate complaints > 0\nMultiple successful attempts for same order\nManual refunds increasing\n```\n\n## Interview Explanation\n\n> I never rely on the frontend for duplicate prevention. The backend must guarantee no duplicate financial effect.",
+          "source": "project_notes",
+          "id": 10
+        }
+      ],
+      "open_questions": [
+        "Scripted simulation: real answer quality has not been evaluated."
+      ],
+      "human_scores": {
+        "correct": null,
+        "supported_claims": null,
+        "total_claims": 2,
+        "notes": ""
+      }
+    },
+    {
+      "case_id": "design-03",
+      "mode": "single",
+      "state": "completed",
+      "simulation": true,
+      "model": "scripted-demo-no-llm",
+      "elapsed_ms": 1.85,
+      "metrics": {
+        "elapsed_ms": 1.85,
+        "tool_calls": 1,
+        "model_calls": 2,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "usage_available": false,
+        "evidence_bytes": 4648
+      },
+      "abstained": false,
+      "coverage": {
+        "technical_docs": "available",
+        "project_notes": "not_searched"
+      },
+      "claims": [
+        {
+          "text": "Source excerpt: 8. Create payment order and attempt in one transaction.\n9. Store response against idempotency key.\n```\n\n## Duplicate webhook handling\n\n```text\n1. Verify signature.\n2. Store raw event.\n3. Deduplicate using provider_event_id.\n4. Deduplicate business effect using provider_txn_id and event_type.\n5. Appl",
+          "citations": [
+            1
+          ]
+        },
+        {
+          "text": "Source excerpt: ### Required Solution\n\nUse idempotency keys, unique order constraints, request hash validation, payment attempt state machine, and provider transaction deduplication.\n\n---\n\n## 3. Near-zero latency problem\n\n### Problem Statement\n\nCustomers expect immediate payment feedback, but backend payment confir",
+          "citations": [
+            2
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "device": "technical-docs",
+          "path": "04-idempotency-and-duplicates.md",
+          "line": 41,
+          "text": "8. Create payment order and attempt in one transaction.\n9. Store response against idempotency key.\n```\n\n## Duplicate webhook handling\n\n```text\n1. Verify signature.\n2. Store raw event.\n3. Deduplicate using provider_event_id.\n4. Deduplicate business effect using provider_txn_id and event_type.\n5. Apply state transition only if valid.\n6. Return HTTP 200 for already processed duplicate events.\n```\n\n## Anti-patterns\n\n```text\nRelying only on frontend disabling the Pay button.\nTreating timeout as failure.\nCreating a new payment attempt for every retry.\nUpdating ledger without unique transaction constraint.\nAllowing SUCCESS to move backward to PENDING.\n```\n\n## Production-ready answer\n\n> I design duplicate handling at multiple layers: API idempotency, database uniqueness, provider transaction uniqueness, webhook deduplication, state-machine transition control, and append-only ledger constraints. The goal is that the same financial event can be replayed multiple times but creates financial impact only once.",
+          "source": "technical_docs",
+          "id": 1
+        },
+        {
+          "device": "technical-docs",
+          "path": "01-business-problems.md",
+          "line": 41,
+          "text": "### Required Solution\n\nUse idempotency keys, unique order constraints, request hash validation, payment attempt state machine, and provider transaction deduplication.\n\n---\n\n## 3. Near-zero latency problem\n\n### Problem Statement\n\nCustomers expect immediate payment feedback, but backend payment confirmation is slow due to provider latency and synchronous dependency chains.\n\n### Business Statement\n\nCustomers repeatedly click Pay Now or abandon checkout. The platform appears unreliable even when money movement eventually succeeds.\n\n### Required Solution\n\nDesign for near-zero perceived latency, not impossible zero latency. Return payment intent quickly, show pending state, complete financial flow through webhook, status polling, and reconciliation.\n\n---\n\n## 4. Duplicate event problem\n\n### Problem Statement\n\nPSP sends the same payment success webhook multiple times. The system processes all events and creates duplicate ledger entries.\n\n### Business Statement\n",
+          "source": "technical_docs",
+          "id": 2
+        },
+        {
+          "device": "technical-docs",
+          "path": "03-system-architecture.md",
+          "line": 61,
+          "text": "## Async path\n\n```text\nWebhook processing\nLedger posting\nOrder confirmation\nNotification\nReconciliation\nSettlement\nAnalytics\n```\n\n## Component responsibilities\n\n### Payment Orchestrator\n\nOwns payment lifecycle, state machine, idempotency, provider routing, and event emission.\n\n### PSP Adapter\n\nIsolates provider-specific API contracts, authentication, signing, status mapping, and retries.\n\n### Webhook Processor\n\nReceives external provider events, validates signature, persists raw event, deduplicates, and triggers state transition.\n\n### Ledger Service\n\nMaintains append-only financial entries. No deletes. Corrections are reversals.\n",
+          "source": "technical_docs",
+          "id": 3
+        },
+        {
+          "device": "technical-docs",
+          "path": "03-system-architecture.md",
+          "line": 81,
+          "text": "Isolates provider-specific API contracts, authentication, signing, status mapping, and retries.\n\n### Webhook Processor\n\nReceives external provider events, validates signature, persists raw event, deduplicates, and triggers state transition.\n\n### Ledger Service\n\nMaintains append-only financial entries. No deletes. Corrections are reversals.\n\n### Reconciliation Engine\n\nCompares internal ledger, PSP settlement report, and bank statement.\n\n### Settlement Service\n\nGroups settled transactions, calculates fees/taxes, and generates merchant payout batches.\n\n### Observability Stack\n\nCaptures metrics, logs, traces, business events, and alerts.\n\n## Architecture decision\n\nCustomer-facing flow can be fast, but financial completion must be durable and correct.",
+          "source": "technical_docs",
+          "id": 4
+        },
+        {
+          "device": "technical-docs",
+          "path": "04-idempotency-and-duplicates.md",
+          "line": 61,
+          "text": "Creating a new payment attempt for every retry.\nUpdating ledger without unique transaction constraint.\nAllowing SUCCESS to move backward to PENDING.\n```\n\n## Production-ready answer\n\n> I design duplicate handling at multiple layers: API idempotency, database uniqueness, provider transaction uniqueness, webhook deduplication, state-machine transition control, and append-only ledger constraints. The goal is that the same financial event can be replayed multiple times but creates financial impact only once.",
+          "source": "technical_docs",
+          "id": 5
+        }
+      ],
+      "open_questions": [
+        "Scripted simulation: real answer quality has not been evaluated."
+      ],
+      "human_scores": {
+        "correct": null,
+        "supported_claims": null,
+        "total_claims": 2,
+        "notes": ""
+      }
+    },
+    {
+      "case_id": "design-03",
+      "mode": "review",
+      "state": "completed",
+      "simulation": true,
+      "model": "scripted-demo-no-llm",
+      "elapsed_ms": 3.34,
+      "metrics": {
+        "elapsed_ms": 3.34,
+        "tool_calls": 2,
+        "model_calls": 5,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "usage_available": false,
+        "evidence_bytes": 8359
+      },
+      "abstained": false,
+      "coverage": {
+        "technical_docs": "available",
+        "project_notes": "available"
+      },
+      "claims": [
+        {
+          "text": "Source excerpt: 8. Create payment order and attempt in one transaction.\n9. Store response against idempotency key.\n```\n\n## Duplicate webhook handling\n\n```text\n1. Verify signature.\n2. Store raw event.\n3. Deduplicate using provider_event_id.\n4. Deduplicate business effect using provider_txn_id and event_type.\n5. Appl",
+          "citations": [
+            1
+          ]
+        },
+        {
+          "text": "Source excerpt: # Case 03: Near-Zero Payment Latency\n\n## Business Problem Statement\n\nCustomers expect instant payment feedback, but checkout appears slow.\n\n## Business Impact\n\nCustomers abandon checkout or retry payment unnecessarily.\n\n## Technical Problem Statement\n\nThe critical request path includes fraud, PSP, l",
+          "citations": [
+            10
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "device": "technical-docs",
+          "path": "04-idempotency-and-duplicates.md",
+          "line": 41,
+          "text": "8. Create payment order and attempt in one transaction.\n9. Store response against idempotency key.\n```\n\n## Duplicate webhook handling\n\n```text\n1. Verify signature.\n2. Store raw event.\n3. Deduplicate using provider_event_id.\n4. Deduplicate business effect using provider_txn_id and event_type.\n5. Apply state transition only if valid.\n6. Return HTTP 200 for already processed duplicate events.\n```\n\n## Anti-patterns\n\n```text\nRelying only on frontend disabling the Pay button.\nTreating timeout as failure.\nCreating a new payment attempt for every retry.\nUpdating ledger without unique transaction constraint.\nAllowing SUCCESS to move backward to PENDING.\n```\n\n## Production-ready answer\n\n> I design duplicate handling at multiple layers: API idempotency, database uniqueness, provider transaction uniqueness, webhook deduplication, state-machine transition control, and append-only ledger constraints. The goal is that the same financial event can be replayed multiple times but creates financial impact only once.",
+          "source": "technical_docs",
+          "id": 1
+        },
+        {
+          "device": "technical-docs",
+          "path": "01-business-problems.md",
+          "line": 41,
+          "text": "### Required Solution\n\nUse idempotency keys, unique order constraints, request hash validation, payment attempt state machine, and provider transaction deduplication.\n\n---\n\n## 3. Near-zero latency problem\n\n### Problem Statement\n\nCustomers expect immediate payment feedback, but backend payment confirmation is slow due to provider latency and synchronous dependency chains.\n\n### Business Statement\n\nCustomers repeatedly click Pay Now or abandon checkout. The platform appears unreliable even when money movement eventually succeeds.\n\n### Required Solution\n\nDesign for near-zero perceived latency, not impossible zero latency. Return payment intent quickly, show pending state, complete financial flow through webhook, status polling, and reconciliation.\n\n---\n\n## 4. Duplicate event problem\n\n### Problem Statement\n\nPSP sends the same payment success webhook multiple times. The system processes all events and creates duplicate ledger entries.\n\n### Business Statement\n",
+          "source": "technical_docs",
+          "id": 2
+        },
+        {
+          "device": "technical-docs",
+          "path": "03-system-architecture.md",
+          "line": 61,
+          "text": "## Async path\n\n```text\nWebhook processing\nLedger posting\nOrder confirmation\nNotification\nReconciliation\nSettlement\nAnalytics\n```\n\n## Component responsibilities\n\n### Payment Orchestrator\n\nOwns payment lifecycle, state machine, idempotency, provider routing, and event emission.\n\n### PSP Adapter\n\nIsolates provider-specific API contracts, authentication, signing, status mapping, and retries.\n\n### Webhook Processor\n\nReceives external provider events, validates signature, persists raw event, deduplicates, and triggers state transition.\n\n### Ledger Service\n\nMaintains append-only financial entries. No deletes. Corrections are reversals.\n",
+          "source": "technical_docs",
+          "id": 3
+        },
+        {
+          "device": "technical-docs",
+          "path": "03-system-architecture.md",
+          "line": 81,
+          "text": "Isolates provider-specific API contracts, authentication, signing, status mapping, and retries.\n\n### Webhook Processor\n\nReceives external provider events, validates signature, persists raw event, deduplicates, and triggers state transition.\n\n### Ledger Service\n\nMaintains append-only financial entries. No deletes. Corrections are reversals.\n\n### Reconciliation Engine\n\nCompares internal ledger, PSP settlement report, and bank statement.\n\n### Settlement Service\n\nGroups settled transactions, calculates fees/taxes, and generates merchant payout batches.\n\n### Observability Stack\n\nCaptures metrics, logs, traces, business events, and alerts.\n\n## Architecture decision\n\nCustomer-facing flow can be fast, but financial completion must be durable and correct.",
+          "source": "technical_docs",
+          "id": 4
+        },
+        {
+          "device": "technical-docs",
+          "path": "04-idempotency-and-duplicates.md",
+          "line": 61,
+          "text": "Creating a new payment attempt for every retry.\nUpdating ledger without unique transaction constraint.\nAllowing SUCCESS to move backward to PENDING.\n```\n\n## Production-ready answer\n\n> I design duplicate handling at multiple layers: API idempotency, database uniqueness, provider transaction uniqueness, webhook deduplication, state-machine transition control, and append-only ledger constraints. The goal is that the same financial event can be replayed multiple times but creates financial impact only once.",
+          "source": "technical_docs",
+          "id": 5
+        },
+        {
+          "device": "project-notes",
+          "path": "case-05-partial-service-failure.md",
+          "line": 1,
+          "text": "# Case 05: Partial Service Failure During Payment\n\n## Business Problem Statement\n\nPayment succeeds but order service is down, leaving order unpaid.\n\n## Business Impact\n\nCustomer money is deducted but order is not confirmed. This severely damages trust.\n\n## Technical Problem Statement\n\nPayment completion depends synchronously on order service.\n\n## Production Failure Scenario\n\n```text\nPSP confirms success\nWebhook arrives\nPayment service calls Order Service\nOrder Service is down\nOrder remains unpaid\n```\n\n## Solution\n\nUse transactional outbox and durable PaymentSucceeded event. Order service consumes idempotently when available.\n\n## Production Controls\n",
+          "source": "project_notes",
+          "id": 6
+        },
+        {
+          "device": "project-notes",
+          "path": "case-02-simultaneous-transactions.md",
+          "line": 1,
+          "text": "# Case 02: Simultaneous Transactions on Same Order\n\n## Business Problem Statement\n\nA customer creates multiple payment attempts for the same order due to double-clicks and frontend retries.\n\n## Business Impact\n\nCustomer may be charged twice, creating refund cost and trust loss.\n\n## Technical Problem Statement\n\nThe backend allows multiple active payment attempts for one order.\n\n## Production Failure Scenario\n\n```text\nT1 customer clicks Pay\nT2 frontend times out\nT3 customer retries\nT4 second attempt created\nT5 both reach PSP\nT6 both succeed\n```\n\n## Solution\n\nUse idempotency keys, unique order constraints, active-attempt locking, and provider transaction dedupe.\n\n## Production Controls",
+          "source": "project_notes",
+          "id": 7
+        },
+        {
+          "device": "project-notes",
+          "path": "case-05-partial-service-failure.md",
+          "line": 21,
+          "text": "Order Service is down\nOrder remains unpaid\n```\n\n## Solution\n\nUse transactional outbox and durable PaymentSucceeded event. Order service consumes idempotently when available.\n\n## Production Controls\n\n```text\nOutbox table\nMessage broker retry\nIdempotent order update\nRepair job\nDLQ\n```\n\n## Fallback\n\n```text\nPayment SUCCESS\nOrder PAYMENT_CONFIRMATION_PENDING\nRetry event\nRun repair job\nAlert ops\n```\n\n## Observability\n",
+          "source": "project_notes",
+          "id": 8
+        },
+        {
+          "device": "project-notes",
+          "path": "case-02-simultaneous-transactions.md",
+          "line": 21,
+          "text": "T4 second attempt created\nT5 both reach PSP\nT6 both succeed\n```\n\n## Solution\n\nUse idempotency keys, unique order constraints, active-attempt locking, and provider transaction dedupe.\n\n## Production Controls\n\n```text\nUNIQUE(merchant_id, order_id)\nUNIQUE(merchant_id, idempotency_key)\nUNIQUE(provider, provider_txn_id)\nState machine transition guard\n```\n\n## Fallback\n\n```text\nFreeze duplicate settlement\nKeep one successful payment\nRefund/reverse duplicate\nNotify support/customer\n```\n\n## Observability\n\n```text",
+          "source": "project_notes",
+          "id": 9
+        },
+        {
+          "device": "project-notes",
+          "path": "case-03-near-zero-latency.md",
+          "line": 1,
+          "text": "# Case 03: Near-Zero Payment Latency\n\n## Business Problem Statement\n\nCustomers expect instant payment feedback, but checkout appears slow.\n\n## Business Impact\n\nCustomers abandon checkout or retry payment unnecessarily.\n\n## Technical Problem Statement\n\nThe critical request path includes fraud, PSP, ledger, notification, and order update synchronously.\n\n## Production Failure Scenario\n\n```text\nPayment API waits for 5 downstream operations\nProvider latency spikes\nCustomer sees spinner\nCustomer retries\n```\n\n## Solution\n\nMinimize synchronous path and move completion to durable async flow.\n\n## Production Controls\n\n```text",
+          "source": "project_notes",
+          "id": 10
+        }
+      ],
+      "open_questions": [
+        "Scripted simulation: real answer quality has not been evaluated."
+      ],
+      "human_scores": {
+        "correct": null,
+        "supported_claims": null,
+        "total_claims": 2,
+        "notes": ""
+      }
+    }
+  ]
+}

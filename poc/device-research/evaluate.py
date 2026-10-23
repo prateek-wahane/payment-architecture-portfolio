@@ -39,7 +39,7 @@ def main():
             citations_valid = True
             for evidence in result["evidence"]:
                 root = repo / ("docs" if evidence["device"] == "technical-docs" else "case-studies")
-                lines = (root / evidence["path"]).read_text().splitlines()
+                lines = (root / evidence["path"]).read_text(encoding="utf-8").splitlines()
                 start = evidence["line"] - 1
                 citations_valid &= "\n".join(lines[start:start + 30]) == evidence["text"]
             rows.append({"question": question, "expected_document": expected,
