@@ -10,7 +10,7 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import assistant
-from agent_lab import Model, RunStore, ScriptedModel
+from agent_lab import Model, RunStore, ScriptedModel, response_schema
 
 TOKEN = "testing-only-long-token-never-deploy"
 
@@ -100,20 +100,23 @@ class AgentLabTests(unittest.TestCase):
         self.assertEqual(run["claims"], [])
 
     def test_invalid_citation_stops_answer(self):
-        run = self.wait(self.store(QueueModel([search(), finish([99])])))
+        run = self.wait(self.store(QueueModel([search(), finish([99]), finish([99])])))
         self.assertEqual(run["state"], "failed")
         self.assertTrue(run["evidence"])
         self.assertEqual(run["claims"], [])
+        self.assertIn("integer citation IDs", run["notice"])
+        self.assertEqual(run["metrics"]["repair_attempts"], 1)
 
     def test_agent_cannot_answer_without_searching(self):
         run = self.wait(self.store(QueueModel([finish()])))
         self.assertEqual(run["state"], "failed")
 
     def test_search_loop_is_bounded(self):
-        run = self.wait(self.store(QueueModel([search()] * 5)))
+        run = self.wait(self.store(QueueModel([search()] * 6)))
         self.assertEqual(run["state"], "failed")
         self.assertEqual(run["metrics"]["tool_calls"], 4)
-        self.assertEqual(run["metrics"]["model_calls"], 5)
+        self.assertEqual(run["metrics"]["model_calls"], 6)
+        self.assertIn("Search budget reached", run["notice"])
 
     def test_reviewer_removes_unsupported_claim(self):
         review = {"checks": [{"claim": 1, "verdict": "unsupported", "note": "Source does not support claim."}],
@@ -193,11 +196,42 @@ class AgentLabTests(unittest.TestCase):
         model = Model({"backend": "ollama", "model": "example", "endpoint": "http://localhost:11434"})
         response = {"message": {"content": '{"action":"search","tool":"technical_docs","query":"webhook"}'},
                     "prompt_eval_count": 10, "eval_count": 5}
+        data = {"question": "test", "tools": [{"name": "technical_docs"}],
+                "evidence": [], "observations": [], "searches_remaining": 4}
         with patch.object(assistant, "request_json", return_value=response) as request:
-            result, usage = model.complete("researcher", {"question": "test"}, 1)
+            result, usage = model.complete("researcher", data, 1)
         self.assertEqual(result["action"], "search")
         self.assertEqual(usage["input_tokens"], 10)
         self.assertEqual(request.call_args.args[0], "http://localhost:11434/api/chat")
+        schema = request.call_args.args[1]["format"]
+        self.assertEqual(schema["properties"]["action"], {"const": "search"})
+        data["observations"] = [{"status": "available"}]
+        data["searches_remaining"] = 0
+        schema = response_schema("researcher", data)
+        self.assertEqual(schema["properties"]["action"], {"const": "finish"})
+
+    def test_invalid_output_gets_one_correction_and_then_completes(self):
+        model = QueueModel([search(), finish([99]), finish()])
+        run = self.wait(self.store(model))
+        self.assertEqual(run["state"], "completed")
+        self.assertEqual(run["metrics"]["repair_attempts"], 1)
+        self.assertEqual(run["metrics"]["model_calls"], 3)
+        self.assertIn("validation_feedback", model.inputs[2][1])
+        self.assertTrue(any(e["kind"] == "retry" for e in run["events"]))
+
+    def test_budget_exhaustion_can_be_corrected_to_finish(self):
+        model = QueueModel([search()] * 5 + [finish()])
+        run = self.wait(self.store(model))
+        self.assertEqual(run["state"], "completed")
+        self.assertEqual(run["metrics"]["tool_calls"], 4)
+        self.assertEqual(run["metrics"]["repair_attempts"], 1)
+
+    def test_untrusted_model_text_is_not_echoed_as_a_diagnostic(self):
+        response = {"action": "private-secret-marker"}
+        run = self.wait(self.store(QueueModel([response, response])))
+        self.assertEqual(run["state"], "failed")
+        self.assertIn("Researcher action must be", run["notice"])
+        self.assertNotIn("private-secret-marker", str(run))
 
 
 if __name__ == "__main__":
