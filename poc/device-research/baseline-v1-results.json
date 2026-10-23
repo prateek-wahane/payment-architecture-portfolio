@@ -1,0 +1,57 @@
+{
+  "scope": "Single-host HTTP simulation; no LLM; curated six-question development set, not a held-out benchmark",
+  "questions": 6,
+  "hit_at_6": 0.5,
+  "all_citation_spans_match_files": true,
+  "median_retrieval_ms": 2.545,
+  "results": [
+    {
+      "question": "How should we handle duplicate webhooks?",
+      "expected_document": "04-idempotency-and-duplicates.md",
+      "hit_at_6": false,
+      "citation_spans_match_files": true,
+      "latency_ms": 3.16,
+      "evidence_bytes": 4862
+    },
+    {
+      "question": "How does the transactional outbox handle partial failure?",
+      "expected_document": "07-partial-failure-handling.md",
+      "hit_at_6": true,
+      "citation_spans_match_files": true,
+      "latency_ms": 2.9,
+      "evidence_bytes": 5338
+    },
+    {
+      "question": "How do we debug payments with observability?",
+      "expected_document": "08-observability-and-debugging.md",
+      "hit_at_6": false,
+      "citation_spans_match_files": true,
+      "latency_ms": 2.45,
+      "evidence_bytes": 4700
+    },
+    {
+      "question": "How does reconciliation compare settlement amounts?",
+      "expected_document": "09-reconciliation-and-settlement.md",
+      "hit_at_6": false,
+      "citation_spans_match_files": true,
+      "latency_ms": 2.54,
+      "evidence_bytes": 4730
+    },
+    {
+      "question": "How can simultaneous transactions avoid race conditions?",
+      "expected_document": "05-simultaneous-transactions.md",
+      "hit_at_6": true,
+      "citation_spans_match_files": true,
+      "latency_ms": 2.55,
+      "evidence_bytes": 4757
+    },
+    {
+      "question": "How do we achieve low latency?",
+      "expected_document": "06-low-latency-design.md",
+      "hit_at_6": true,
+      "citation_spans_match_files": true,
+      "latency_ms": 2.36,
+      "evidence_bytes": 5118
+    }
+  ]
+}
